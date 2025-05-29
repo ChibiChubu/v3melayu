@@ -9,7 +9,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const [email, setEmail] = useState(''); // Ubah dari username ke email
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -18,15 +18,17 @@ const Login = () => {
         e.preventDefault();
         setError('');
 
-        // **PENTING:** Buang semakan username hardcoded ini.
-        // if (username !== "Hafizveo") {
-        //     setError("Username tidak sah. Hanya 'Hafizveo' dibenarkan.");
-        //     return;
-        // }
+        // Semakan username di frontend: HANYA Hafizveo dibenarkan
+        if (username !== "Hafizveo") {
+            setError("Username tidak sah. Hanya 'Hafizveo' dibenarkan.");
+            return;
+        }
 
-        // Cuba login ke Firebase dengan email dan password yang dimasukkan
+        // Cuba login ke Firebase dengan email admin dan password yang dimasukkan
         try {
-            await signInWithEmailAndPassword(auth, email, password); // Gunakan 'email' dari state
+            // SANGAT PENTING: "hafiz@veo.com" MESTI sama dengan email yang anda DAFTAR di Firebase Console!
+            await signInWithEmailAndPassword(auth, "hafiz@veo.com", password);
+
             alert("Log masuk berjaya!");
             navigate('/dashboard'); // Alihkan ke halaman dashboard
         } catch (err) {
@@ -34,7 +36,7 @@ const Login = () => {
 
             switch (err.code) {
                 case "auth/invalid-credential":
-                    setError("Email atau kata laluan tidak sah."); // Ubah mesej ralat
+                    setError("Nama pengguna atau kata laluan tidak sah.");
                     break;
                 case "auth/user-disabled":
                     setError("Akaun anda telah dinyahaktifkan.");
@@ -72,18 +74,18 @@ const Login = () => {
                 }}>Please login to continue</p>
                 <form onSubmit={handleLogin}>
                     <div className="input-group" style={{ marginBottom: '20px' }}>
-                        <label htmlFor="email" style={{ // Ubah htmlFor ke 'email'
+                        <label htmlFor="username" style={{
                             display: 'block',
                             textAlign: 'left',
                             marginBottom: '8px',
                             color: '#e0b0ff'
-                        }}>Email</label> {/* Ubah teks label ke 'Email' */}
+                        }}>Username</label>
                         <input
-                            type="email" // Ubah type ke 'email'
-                            id="email" // Ubah id ke 'email'
-                            placeholder="Enter your email" // Ubah placeholder
-                            value={email} // Gunakan state 'email'
-                            onChange={(e) => setEmail(e.target.value)} // Set state 'email'
+                            type="text"
+                            id="username"
+                            placeholder="Enter your username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                             style={{
                                 width: 'calc(100% - 20px)',
