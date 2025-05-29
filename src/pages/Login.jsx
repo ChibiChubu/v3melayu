@@ -9,7 +9,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const [email, setEmail] = useState(''); // Ubah dari username ke email
+    const [email, setEmail] = useState(''); // ✅ BETUL: Gunakan 'email' state
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -23,10 +23,11 @@ const Login = () => {
         //     setError("Username tidak sah. Hanya 'Hafizveo' dibenarkan.");
         //     return;
         // }
+        // ✅ BETUL: Bahagian ini telah dikomen, yang bermaksud ia tidak aktif. Ini bagus!
 
         // Cuba login ke Firebase dengan email dan password yang dimasukkan
         try {
-            await signInWithEmailAndPassword(auth, email, password); // Gunakan 'email' dari state
+            await signInWithEmailAndPassword(auth, email, password); // ✅ BETUL: Gunakan 'email' dari state
             alert("Log masuk berjaya!");
             navigate('/dashboard'); // Alihkan ke halaman dashboard
         } catch (err) {
@@ -34,7 +35,7 @@ const Login = () => {
 
             switch (err.code) {
                 case "auth/invalid-credential":
-                    setError("Email atau kata laluan tidak sah."); // Ubah mesej ralat
+                    setError("Email atau kata laluan tidak sah.");
                     break;
                 case "auth/user-disabled":
                     setError("Akaun anda telah dinyahaktifkan.");
@@ -72,65 +73,18 @@ const Login = () => {
                 }}>Please login to continue</p>
                 <form onSubmit={handleLogin}>
                     <div className="input-group" style={{ marginBottom: '20px' }}>
-                        <label htmlFor="email" style={{ // Ubah htmlFor ke 'email'
-                            display: 'block',
-                            textAlign: 'left',
-                            marginBottom: '8px',
-                            color: '#e0b0ff'
-                        }}>Email</label> {/* Ubah teks label ke 'Email' */}
+                        <label htmlFor="email" style={{ /* ... */ }}>Email</label> {/* ✅ BETUL: Label 'Email' */}
                         <input
-                            type="email" // Ubah type ke 'email'
-                            id="email" // Ubah id ke 'email'
-                            placeholder="Enter your email" // Ubah placeholder
-                            value={email} // Gunakan state 'email'
-                            onChange={(e) => setEmail(e.target.value)} // Set state 'email'
+                            type="email" // ✅ BETUL: Type 'email'
+                            id="email" // ✅ BETUL: ID 'email'
+                            placeholder="Enter your email" // ✅ BETUL: Placeholder 'email'
+                            value={email} // ✅ BETUL: Guna 'email' state
+                            onChange={(e) => setEmail(e.target.value)} // ✅ BETUL: Set 'email' state
                             required
-                            style={{
-                                width: 'calc(100% - 20px)',
-                                padding: '10px',
-                                borderRadius: '4px',
-                                border: '1px solid #555',
-                                backgroundColor: '#444',
-                                color: 'white'
-                            }}
+                            style={{ /* ... */ }}
                         />
                     </div>
-                    <div className="input-group" style={{ marginBottom: '30px' }}>
-                        <label htmlFor="password" style={{
-                            display: 'block',
-                            textAlign: 'left',
-                            marginBottom: '8px',
-                            color: '#e0b0ff'
-                        }}>Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            style={{
-                                width: 'calc(100% - 20px)',
-                                padding: '10px',
-                                borderRadius: '4px',
-                                border: '1px solid #555',
-                                backgroundColor: '#444',
-                                color: 'white'
-                            }}
-                        />
-                    </div>
-                    {error && <p className="error-message" style={{ color: 'red', marginBottom: '20px' }}>{error}</p>}
-                    <button type="submit" style={{
-                        width: '100%',
-                        padding: '12px',
-                        borderRadius: '4px',
-                        border: 'none',
-                        backgroundColor: '#8a2be2',
-                        color: 'white',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.3s ease'
-                    }}>Login</button>
+                    {/* ... (bahagian password dan error) ... */}
                 </form>
             </div>
         </div>
