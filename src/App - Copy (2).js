@@ -125,7 +125,7 @@ const PromptEnhancerApp = ({ onLogout, currentUser }) => { // Menerima onLogout 
     setPromptAfter('');
     setCopyFeedback('');
 
-    const apiKey = "process.env.NEXT_PUBLIC_GEMINI_API_KEY"; // Ini API Key Gemini anda
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Ini API Key Gemini anda
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const instructionPrompt = `You are a creative prompt enhancer. Take the following concise prompt and expand it into a highly detailed, vivid, and descriptive prompt suitable for generating images or scenes, primarily in English. Crucially, any dialogue provided in Malay with slang or accent MUST be preserved exactly as is, without translation or modification. Include sensory details, camera angles, lighting, environment, character appearance, actions, dialogue, and overall mood/vibe. The output should ONLY be the enhanced prompt, without any conversational text or introductions.
