@@ -1,0 +1,7 @@
+git status
+
+git add .
+
+git commit -m "Update homepage in package.json for Vercel deployment"
+
+git push origin main

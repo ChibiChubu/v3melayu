@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 // Predefined users - Add more users here
 const VALID_USERS = {
-  'customer1': 'pass123',
+  'Veo3': 'veostylo',
   'customer2': 'mypass456',
   'testuser': 'test123',
   // Add more customers here
