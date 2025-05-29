@@ -1,86 +1,90 @@
+// src/pages/Dashboard.jsx (atau src/Dashboard.jsx jika anda letak terus dalam src)
+
 import React, { useEffect, useState } from 'react';
-import { auth, db } from '../firebase-config';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore'; // Jika guna Firestore
-// import { ref, onValue } from "firebase/database"; // Jika guna Realtime Database
+// Penting: Pastikan path ke firebase-config.js betul
+// Jika Dashboard.jsx ada di src/pages/ dan firebase-config.js di src/, guna '../firebase-config'
+// Jika Dashboard.jsx ada di src/ dan firebase-config.js di src/, guna './firebase-config'
+import { auth } from '../firebase-config';
+import { signOut, onAuthStateChanged } from 'firebase/auth'; // Import signOut dan onAuthStateChanged
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+    // State untuk menyimpan maklumat pengguna yang sedang log masuk
     const [user, setUser] = useState(null);
+    // State untuk menunjukkan status loading (sedang semak status login)
     const [loading, setLoading] = useState(true);
+    // Hook dari react-router-dom untuk navigasi (mengalihkan halaman)
     const navigate = useNavigate();
 
+    // Gunakan useEffect untuk semak status login apabila komponen dimuatkan
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        // onAuthStateChanged adalah listener Firebase yang akan memberitahu kita status login
+        // Ini akan dipanggil setiap kali status login berubah (log masuk, log keluar)
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {
-                const localSessionId = localStorage.getItem('currentSessionId');
-                const localUid = localStorage.getItem('uid');
-
-                if (!localSessionId || !localUid || localUid !== currentUser.uid) {
-                    // Jika tiada sesi tempatan atau uid tidak sepadan, log keluar paksa
-                    await signOut(auth);
-                    navigate('/login');
-                    return;
-                }
-
-                // Semak status sesi dari Firestore
-                const userDocRef = doc(db, "users", currentUser.uid);
-                const userDocSnap = await getDoc(userDocRef);
-
-                if (userDocSnap.exists()) {
-                    const data = userDocSnap.data();
-                    if (data.currentSessionId !== localSessionId) {
-                        alert("Anda telah log masuk dari peranti lain. Sesi ini akan ditamatkan.");
-                        await signOut(auth);
-                        navigate('/login');
-                        return;
-                    }
-                } else {
-                    // Jika tiada rekod sesi di Firestore, mungkin ada masalah
-                    // Atau ini adalah log masuk pertama kali dengan cara baru
-                    await signOut(auth);
-                    navigate('/login');
-                    return;
-                }
-
+                // Jika ada pengguna yang sedang log masuk, simpan maklumat pengguna
                 setUser(currentUser);
             } else {
+                // Jika tiada pengguna log masuk, alihkan mereka ke halaman login
                 setUser(null);
                 navigate('/login');
             }
-            setLoading(false);
+            setLoading(false); // Selesai loading, paparkan kandungan
         });
 
+        // Clean-up function: penting untuk berhenti mendengar apabila komponen dibuang
+        // Ini elakkan memory leak dan masalah lain
         return () => unsubscribe();
-    }, [navigate]);
+    }, [navigate]); // navigate sebagai dependency supaya useEffect re-run jika navigate berubah
 
+    // Fungsi untuk mengendalikan proses log keluar
     const handleLogout = async () => {
         try {
-            // Sebelum log keluar, kita boleh kosongkan rekod sesi di Firestore
-            // Ini tidak wajib jika anda mahu sesi yang terakhir sahaja yang sah
-            // Contoh: await setDoc(doc(db, "users", user.uid), { currentSessionId: null }, { merge: true });
-            await signOut(auth);
-            localStorage.removeItem('currentSessionId');
-            localStorage.removeItem('uid');
-            navigate('/login');
+            await signOut(auth); // Log keluar dari Firebase
+            navigate('/login'); // Kembali ke halaman login
+            alert("Anda telah log keluar.");
         } catch (error) {
-            console.error("Error logging out:", error);
+            console.error("Ralat semasa log keluar:", error);
+            alert("Gagal log keluar. Sila cuba lagi.");
         }
     };
 
+    // Jika masih loading, paparkan mesej "Loading..."
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div style={{
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                minHeight: '100vh', backgroundColor: '#282c34', color: 'white', fontSize: '24px'
+            }}>
+                Loading...
+            </div>
+        );
     }
 
+    // Jika tiada pengguna (bermakna sudah dialihkan ke login atau ada masalah), jangan paparkan apa-apa
     if (!user) {
-        return null; // Akan dialihkan ke login
+        return null;
     }
 
+    // Jika pengguna sudah log masuk dan bukan loading, paparkan dashboard
     return (
-        <div>
-            <h1>Selamat Datang, {user.email}!</h1>
-            {/* Kandungan dashboard anda di sini */}
-            <button onClick={handleLogout}>Log Keluar</button>
+        <div style={{
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+            minHeight: '100vh', backgroundColor: '#282c34', color: 'white', textAlign: 'center'
+        }}>
+            <h1 style={{ color: '#e0b0ff', marginBottom: '20px' }}>Selamat Datang, Admin Hafiz!</h1>
+            <p style={{ fontSize: '18px', marginBottom: '30px' }}>Ini adalah halaman dashboard rahsia anda.</p>
+            <p>Email yang digunakan: {user.email}</p>
+            <button onClick={handleLogout} style={{
+                backgroundColor: '#dc3545', // Warna butang merah
+                color: 'white',
+                padding: '12px 25px',
+                borderRadius: '5px',
+                border: 'none',
+                fontSize: '16px',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s ease'
+            }}>Log Keluar</button>
         </div>
     );
 };

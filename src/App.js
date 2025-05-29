@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- PENTING: Import useState dan useEffect
+import { auth } from './firebase-config'; // <-- PENTING: Pastikan path ini betul (jika firebase-config.js di src/)
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'; // <-- Import fungsi Firebase Auth
 
-// Predefined users - Add more users here
-const VALID_USERS = {
-  'Veo3': 'veostylo',
-  'customer2': 'mypass456',
-  'testuser': 'test123',
-  // Add more customers here
-};
-
-// Login Component
-const LoginPage = ({ onLogin, error }) => {
+// Login Component (Telah diubah suai untuk Firebase)
+const LoginPage = ({ setLoginError, error }) => { // Menerima `setLoginError` dan `error` dari parent
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,12 +11,35 @@ const LoginPage = ({ onLogin, error }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      onLogin(username, password);
-      setIsLoading(false);
-    }, 1000);
+    setLoginError(''); // Kosongkan ralat sebelum cuba login
+
+
+    if (username !== "Hafizveo") {
+        setLoginError("Username tidak sah.");
+        setIsLoading(false);
+        return;
+    }
+
+    // 2. Cuba Login ke Firebase
+    try {
+        // Guna email admin yang didaftarkan di Firebase Console
+        await signInWithEmailAndPassword(auth, "hafiz@veo.com", password); // <-- PENTING: Guna EMAIL ADMIN sebenar anda!
+        // Jika berjaya, onAuthStateChanged di App akan handle state
+    } catch (err) {
+        console.error("Firebase Login Error:", err.code, err.message);
+        switch (err.code) {
+            case "auth/invalid-credential":
+                setLoginError("Nama pengguna atau kata laluan tidak sah.");
+                break;
+            case "auth/user-disabled":
+                setLoginError("Akaun anda telah dinyahaktifkan.");
+                break;
+            default:
+                setLoginError("Ralat semasa log masuk. Sila cuba lagi.");
+        }
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -66,7 +83,7 @@ const LoginPage = ({ onLogin, error }) => {
             />
           </div>
 
-          {error && (
+          {error && ( // Gunakan prop `error` yang diterima
             <div className="bg-red-900 border border-red-700 text-red-300 p-3 rounded-lg text-center text-sm">
               {error}
             </div>
@@ -88,14 +105,14 @@ const LoginPage = ({ onLogin, error }) => {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-400">
-                  </div>
+        </div>
       </div>
     </div>
   );
 };
 
-// Main App component for the Prompt Enhancer
-const PromptEnhancerApp = ({ onLogout, currentUser }) => {
+// Main App component for the Prompt Enhancer (Dashboard)
+const PromptEnhancerApp = ({ onLogout, currentUser }) => { // Menerima onLogout dan currentUser dari parent
   const [promptBefore, setPromptBefore] = useState('');
   const [promptAfter, setPromptAfter] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +125,7 @@ const PromptEnhancerApp = ({ onLogout, currentUser }) => {
     setPromptAfter('');
     setCopyFeedback('');
 
-    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ";
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Ini API Key Gemini anda
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const instructionPrompt = `You are a creative prompt enhancer. Take the following concise prompt and expand it into a highly detailed, vivid, and descriptive prompt suitable for generating images or scenes, primarily in English. Crucially, any dialogue provided in Malay with slang or accent MUST be preserved exactly as is, without translation or modification. Include sensory details, camera angles, lighting, environment, character appearance, actions, dialogue, and overall mood/vibe. The output should ONLY be the enhanced prompt, without any conversational text or introductions.
@@ -187,17 +204,21 @@ Now, enhance the following prompt: "${promptBefore}"`;
   const renderHighlightedPrompt = () => {
     if (!promptAfter) return null;
 
-    const parts = promptAfter.split(/((?:"|"|")[^"|"|"]*(?:"|"|))/g);
+    // Menggunakan regex untuk mencari string yang dikelilingi oleh kutip ganda atau kutip tunggal
+    // dan memastikan ia tidak menangkap kutip berganda sebagai permulaan atau penghujung
+    const parts = promptAfter.split(/((?:"[^"]*")|(?:'[^']*'))/g);
+
 
     return parts.map((part, index) => {
-      if (part.match(/^(?:"|"|").*(?:"|")$/)) {
-        return (
-          <span key={index} className="bg-yellow-700 bg-opacity-50 rounded px-1 py-0.5 text-yellow-200">
-            {part}
-          </span>
-        );
-      }
-      return <span key={index}>{part}</span>;
+        // Cek jika bahagian itu adalah string dalam kutip ganda atau kutip tunggal
+        if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
+            return (
+                <span key={index} className="bg-yellow-700 bg-opacity-50 rounded px-1 py-0.5 text-yellow-200">
+                    {part}
+                </span>
+            );
+        }
+        return <span key={index}>{part}</span>;
     });
   };
 
@@ -215,7 +236,7 @@ Now, enhance the following prompt: "${promptBefore}"`;
             </p>
           </div>
           <button
-            onClick={onLogout}
+            onClick={onLogout} // Panggil onLogout dari props
             className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
           >
             Logout
@@ -301,46 +322,56 @@ Now, enhance the following prompt: "${promptBefore}"`;
 
 // Main App component that handles authentication
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loginError, setLoginError] = useState('');
+  const [currentUser, setCurrentUser] = useState(null); // Akan menyimpan objek user Firebase
+  const [loadingAuth, setLoadingAuth] = useState(true); // Untuk loading awal Firebase Auth
+  const [loginError, setLoginError] = useState(''); // Untuk mesej ralat login
 
-  // Check if user is already logged in (using sessionStorage)
+  // useEffect untuk memantau status autentikasi Firebase
   useEffect(() => {
-    const savedUser = sessionStorage.getItem('authenticatedUser');
-    if (savedUser && VALID_USERS[savedUser]) {
-      setIsAuthenticated(true);
-      setCurrentUser(savedUser);
-    }
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Jika ada pengguna yang log masuk, simpan objek pengguna (Firebase User Object)
+        setCurrentUser(user);
+        setLoginError(''); // Kosongkan ralat jika berjaya login
+      } else {
+        // Jika tiada pengguna log masuk, kosongkan currentUser
+        setCurrentUser(null);
+      }
+      setLoadingAuth(false); // Selesai loading auth
+    });
 
-  const handleLogin = (username, password) => {
-    // Check if credentials are valid
-    if (VALID_USERS[username] && VALID_USERS[username] === password) {
-      setIsAuthenticated(true);
-      setCurrentUser(username);
-      setLoginError('');
-      // Save login state (will be lost when browser is closed)
-      sessionStorage.setItem('authenticatedUser', username);
-    } else {
-      setLoginError('Invalid username or password');
+    // Cleanup subscription pada unmount komponen
+    return () => unsubscribe();
+  }, []); // Dependensi kosong bermaksud ia hanya berjalan sekali pada mount
+
+  // Fungsi logout yang akan digunakan oleh PromptEnhancerApp
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Log keluar dari Firebase
+      setLoginError(''); // Kosongkan ralat
+    } catch (error) {
+      console.error("Error signing out:", error);
+      setLoginError("Gagal log keluar.");
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setLoginError('');
-    sessionStorage.removeItem('authenticatedUser');
-  };
-
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} error={loginError} />;
+  // Tunjukkan skrin loading sementara semak status autentikasi Firebase
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100 flex items-center justify-center text-xl">
+        Memuatkan autentikasi...
+      </div>
+    );
   }
 
-  // Show main app if authenticated
-  return <PromptEnhancerApp onLogout={handleLogout} currentUser={currentUser} />;
+  // Tunjukkan LoginPage jika tiada pengguna log masuk
+  if (!currentUser) {
+    return <LoginPage setLoginError={setLoginError} error={loginError} />; // Hantar setLoginError dan mesej error
+  }
+
+  // Tunjukkan PromptEnhancerApp jika pengguna sudah log masuk
+  // Kita hantar currentUser.email kerana PromptEnhancerApp menggunakan email untuk paparan
+  return <PromptEnhancerApp onLogout={handleLogout} currentUser={currentUser.email} />;
 };
 
 export default App;
