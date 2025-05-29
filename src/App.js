@@ -13,13 +13,6 @@ const LoginPage = ({ setLoginError, error }) => {
     setIsLoading(true);
     setLoginError('');
 
-    // **PENTING:** Buang semakan username hardcoded ini.
-    // if (username !== "Hafizveo") {
-    //     setLoginError("Username tidak sah.");
-    //     setIsLoading(false);
-    //     return;
-    // }
-
     try {
         // Guna email dari state (input borang) untuk login Firebase
         await signInWithEmailAndPassword(auth, email, password);
@@ -134,7 +127,10 @@ const PromptEnhancerApp = ({ onLogout, currentUser }) => {
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-    const instructionPrompt = `You are a creative prompt enhancer. Take the following concise prompt and expand it into a highly detailed, vivid, and descriptive prompt suitable for generating images or scenes, primarily in English. Crucially, any dialogue provided in Malay with slang or accent MUST be preserved exactly as is, without translation or modification. Include sensory details, camera angles, lighting, environment, character appearance, actions, dialogue, and overall mood/vibe. The output should ONLY be the enhanced prompt, without any conversational text or introductions.
+    // ************************************************************************************************************************
+    // PERUBAHAN PENTING DI SINI: Arahan kepada AI untuk hanya meletakkan dialog dalam tanda petikan.
+    // ************************************************************************************************************************
+    const instructionPrompt = `You are a creative prompt enhancer. Take the following concise prompt and expand it into a highly detailed, vivid, and descriptive prompt suitable for generating images or scenes, primarily in English. Crucially, any dialogue provided in Malay with slang or accent MUST be preserved exactly as is, without translation or modification. The output should ONLY be the enhanced prompt, without any conversational text or introductions. Dialogue within the prompt MUST be enclosed in double quotation marks (e.g., "This is dialogue!"), and no other parts of the prompt should be quoted. Include sensory details, camera angles, lighting, environment, character appearance, actions, and overall mood/vibe.
 
 Example input: "Perempuan melayu rambut emo gothic style. Tengah ajar cara make-up dgn viewer tiktok dia sambil sia cakap : Salam guys! Kalini aku nak cuba-cuba make style gothic..!"
 Example output: "A vertical handheld shot in a softly lit bedroom filled with black lace curtains, band posters, and dim purple LED lights. A young Malay woman with choppy black emo-goth hair, dark eyeliner, and piercings looks straight into her phone camera. She's sitting cross-legged in front of a mirror, makeup brushes and palettes scattered around her. She smiles slightly, raising a compact foundation in one hand and says with casual energy, "Salam guys! Kalini aku nak cuba-cuba make style gothic..!" She begins applying makeup with focused intensity, occasionally glancing at the camera. Background audio hums with lo-fi gothic music, and soft tapping sounds from the brush add to the cozy, intimate TikTok vibe. Her tone is playful but sincere, capturing the aesthetic and attitude of the subculture with a local twist."
@@ -210,9 +206,12 @@ Now, enhance the following prompt: "${promptBefore}"`;
   const renderHighlightedPrompt = () => {
     if (!promptAfter) return null;
 
+    // Regex untuk mencari teks dalam tanda petikan berganda atau tunggal.
+    // Ini akan berfungsi dengan baik jika AI hanya meletakkan dialog dalam petikan.
     const parts = promptAfter.split(/((?:"[^"]*")|(?:'[^']*'))/g);
 
     return parts.map((part, index) => {
+        // Semak jika bahagian itu bermula dan berakhir dengan tanda petikan
         if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
             return (
                 <span key={index} className="bg-yellow-700 bg-opacity-50 rounded px-1 py-0.5 text-yellow-200">
