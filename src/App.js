@@ -51,7 +51,7 @@ const LoginPage = ({ setLoginError, error }) => {
       <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-700">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-purple-400 mb-2">
-            Prompt Enhancer VEO3
+            PROMPT ENHANCER {/* Changed from Prompt Enhancer VEO3 */}
           </h1>
           <p className="text-gray-400">Please login to continue</p>
         </div>
@@ -306,27 +306,25 @@ const ImageToTextEnhancer = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [enhancedText, setEnhancedText] = useState('');
+  const [motionPrompt, setMotionPrompt] = useState(''); // New state for motion prompt
   const [isLoading, setIsLoading] = useState(false);
+  const [isMotionLoading, setIsMotionLoading] = useState(false); // New loading state for motion
   const [error, setError] = useState(null);
+  const [motionError, setMotionError] = useState(null); // New error state for motion
   const [copyFeedback, setCopyFeedback] = useState('');
+  const [motionCopyFeedback, setMotionCopyFeedback] = useState(''); // New copy feedback for motion
 
-  const PROMPT_WRITING_GUIDE = `PROMPT WRITING GUIDE – IMAGE TO TEXT DESCRIPTION
+  const IMAGE_PROMPT_WRITING_GUIDE = `PROMPT WRITING GUIDE – IMAGE Enchance Prompt
 Your Role: You are a good analyze and expert prompt engineer specializing in transforming still images into vivid.
 Please Enchance the prompt with the good visual when generate the image.
 
-Prompt Structure (In Order):
-1. Infer (e.g: malay, chinese, indian, korean, japan, europa) with contextual cultural cues like hijab style, facial structure, skin tone, and makeup trends in the region.
-2. Specify camera angles, focus depth, and lighting setup.
-3. Analyze and specify the visual art style or medium of the image—such as photography, anime, cinematic, 3D render, Pixar-style, RAW photo, etc.
-4. Describe character appearance and clothing details.
-5. Describe precise gestures, facial expressions, and physical interactions.
-6. Include environmental elements and ambient.
-7. Describe the main action.
-
 Final Output Rules:
 - Max ~800 characters
-- Concise the prompt properly
+- One flowing paragraph
+- No introductions or commentary
 - Output the prompt only`;
+
+  const MOTION_PROMPT_WRITING_GUIDE = `You are a specialized animation prompt enhancer designed to transform prompts that describe still images into highly detailed animation prompts in the style specified by the prompt.The syle might be cinematic, anime, a pencil sketch, or any other type of art style. Your task is to generate a single animation prompt per input, strictly adhering to the following rules: Rules: The output must precisely follow the wording and structure of the input, only adding movement to the subject if needed, and adding subtle camera movement, but keeping it overall very consistent with the input prompt. However you can also be creative and add or remove visually interesting aspects to make the animation more interesting, more beautiful or more entertaining. IMPORTANT: YOU MUST ANSWER WITH ONLY THE OUTPUT ANIMATION PROMPT THAT VERY PRECISELY RESEMBLES THE IMAGE PROMPT AND ADDS SUBJECT ACTION AND CAMERA ACTION FOR A SINGLE CAMERA SHOT BASED ON THE USER'S INPUT, COHERING PERFECTLY TO THE RULES AND REQUEST AS A SINGLE STRING. When writing prompts, focus on detailed, chronological descriptions of actions and scenes. Include specific movements, appearances, camera angles, and environmental details - all in a single flowing paragraph. Start directly with the action, and keep descriptions literal and precise. Think like a cinematographer describing a shot list. Keep within 200 words. For best results, build your prompts using this structure: Start by Describing the main action in a single sentence. Add specific details about movements and gestures. Then describe the specific art style. Describe character/object appearances precisely. Include background and environment details. Specify camera angles and movements. Describe lighting and colors and art syle. Note any changes or sudden events.`;
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -338,12 +336,16 @@ Final Output Rules:
       };
       reader.readAsDataURL(file);
       setEnhancedText('');
+      setMotionPrompt(''); // Clear motion prompt on new image upload
       setError(null);
+      setMotionError(null); // Clear motion error
       setCopyFeedback('');
+      setMotionCopyFeedback(''); // Clear motion copy feedback
     } else {
       setSelectedImage(null);
       setImagePreview(null);
       setEnhancedText('');
+      setMotionPrompt('');
     }
   };
 
@@ -356,22 +358,23 @@ Final Output Rules:
     setIsLoading(true);
     setError(null);
     setEnhancedText('');
+    setMotionPrompt(''); // Clear motion prompt when generating new image text
     setCopyFeedback('');
 
-    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Updated with the provided API key
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const reader = new FileReader();
     reader.readAsDataURL(selectedImage);
     reader.onloadend = async () => {
-      const base64ImageData = reader.result.split(',')[1]; // Get base64 part
+      const base64ImageData = reader.result.split(',')[1];
 
       const payload = {
         contents: [
           {
             role: "user",
             parts: [
-              { text: PROMPT_WRITING_GUIDE }, // The instruction guide
+              { text: IMAGE_PROMPT_WRITING_GUIDE },
               {
                 inlineData: {
                   mimeType: selectedImage.type,
@@ -414,19 +417,72 @@ Final Output Rules:
     };
   };
 
-  const copyToClipboard = () => {
+  const handleMotionPrompt = async () => {
+    if (!enhancedText) {
+      setMotionError("Sila hasilkan prompt imej terlebih dahulu.");
+      return;
+    }
+
+    setIsMotionLoading(true);
+    setMotionError(null);
+    setMotionPrompt('');
+    setMotionCopyFeedback('');
+
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const instructionPrompt = `${MOTION_PROMPT_WRITING_GUIDE}\n\nInput prompt to animate: "${enhancedText}"`;
+
+    let chatHistory = [];
+    chatHistory.push({ role: "user", parts: [{ text: instructionPrompt }] });
+
+    const payload = {
+      contents: chatHistory,
+    };
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.candidates && result.candidates.length > 0 &&
+        result.candidates[0].content && result.candidates[0].content.parts &&
+        result.candidates[0].content.parts.length > 0) {
+        const text = result.candidates[0].content.parts[0].text;
+        setMotionPrompt(text);
+      } else {
+        setMotionError("Tiada prompt gerakan ditemui dalam respons API. Sila cuba lagi.");
+      }
+    } catch (err) {
+      console.error("Error generating motion prompt:", err);
+      setMotionError(`Gagal menjana prompt gerakan: ${err.message}`);
+    } finally {
+      setIsMotionLoading(false);
+    }
+  };
+
+  const copyToClipboard = (textToCopy, setFeedback) => {
     const tempTextArea = document.createElement('textarea');
-    tempTextArea.value = enhancedText;
+    tempTextArea.value = textToCopy;
     document.body.appendChild(tempTextArea);
     tempTextArea.select();
     tempTextArea.setSelectionRange(0, 99999);
     try {
       document.execCommand('copy');
-      setCopyFeedback('Copied!');
-      setTimeout(() => setCopyFeedback(''), 2000);
+      setFeedback('Copied!');
+      setTimeout(() => setFeedback(''), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
-      setCopyFeedback('Failed to copy!');
+      setFeedback('Failed to copy!');
     } finally {
       document.body.removeChild(tempTextArea);
     }
@@ -436,15 +492,19 @@ Final Output Rules:
     setSelectedImage(null);
     setImagePreview(null);
     setEnhancedText('');
+    setMotionPrompt(''); // Clear motion prompt on reset
     setError(null);
+    setMotionError(null); // Clear motion error on reset
     setCopyFeedback('');
+    setMotionCopyFeedback(''); // Clear motion copy feedback on reset
     setIsLoading(false);
+    setIsMotionLoading(false); // Reset motion loading state
   };
 
   return (
     <>
       <p className="text-center text-gray-400 mb-8">
-        Muat naik imej, dan biarkan AI mengubahnya menjadi penerangan prompt yang terperinci.
+        Masukkan gambar
       </p>
 
       <div className="mb-6">
@@ -477,7 +537,7 @@ Final Output Rules:
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           ) : (
-            'Enhance Image Prompt'
+            'Submit'
           )}
         </button>
         <button
@@ -485,6 +545,20 @@ Final Output Rules:
           className="px-8 py-3 bg-gray-600 text-white font-semibold rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-75 transition duration-300 ease-in-out w-full sm:w-auto"
         >
           Reset
+        </button>
+        <button
+          onClick={handleMotionPrompt}
+          disabled={isMotionLoading || !enhancedText} /* Disabled when no enhancedText */
+          className="px-8 py-3 bg-purple-600 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-full sm:w-auto"
+        >
+          {isMotionLoading ? (
+            <svg className="animate-spin h-5 w-5 text-white mr-3" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            'Motion'
+          )}
         </button>
       </div>
 
@@ -505,7 +579,7 @@ Final Output Rules:
                 <span className="text-sm text-green-400 mr-2">{copyFeedback}</span>
               )}
               <button
-                onClick={copyToClipboard}
+                onClick={() => copyToClipboard(enhancedText, setCopyFeedback)}
                 className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
               >
                 Copy
@@ -518,6 +592,39 @@ Final Output Rules:
           >
             {enhancedText}
           </div>
+
+          {motionError && (
+            <div className="bg-red-900 border border-red-700 text-red-300 p-4 rounded-lg mt-6 text-center">
+              Ralat Gerakan: {motionError}
+            </div>
+          )}
+
+          {motionPrompt && (
+            <div className="mt-6">
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="motion-prompt-display" className="block text-lg font-medium text-gray-300">
+                  Prompt Gerakan:
+                </label>
+                <div className="flex items-center">
+                  {motionCopyFeedback && (
+                    <span className="text-sm text-green-400 mr-2">{motionCopyFeedback}</span>
+                  )}
+                  <button
+                    onClick={() => copyToClipboard(motionPrompt, setMotionCopyFeedback)}
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <div
+                id="motion-prompt-display"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none text-gray-200 h-80 resize-y overflow-auto"
+              >
+                {motionPrompt}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
@@ -575,7 +682,7 @@ const App = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-purple-400">
-              Prompt Enhancer VEO3
+              PROMPT ENHANCER {/* Changed from Prompt Enhancer VEO3 */}
             </h1>
             <p className="text-sm text-gray-400 mt-1">
               Welcome, {currentUser.email}
