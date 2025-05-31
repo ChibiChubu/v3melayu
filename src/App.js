@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './firebase-config';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { initializeApp } from "firebase/app"; // Import initializeApp
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'; // Import getAuth
 
-// Login Component
+// Firebase configuration (moved from firebase-config.js)
+const firebaseConfig = {
+  apiKey: "AIzaSyCFzCb1qZoM3Up25VTopNeh7-qEW4HqSeY",
+  authDomain: "promptenhancerveo3.firebaseapp.com",
+  projectId: "promptenhancerveo3",
+  storageBucket: "promptenhancerveo3.firebasestorage.app",
+  messagingSenderId: "873932851824",
+  appId: "1:873932851824:web:64b82ad6512985650a82b5"
+};
+
+// Initialize Firebase (moved from firebase-config.js)
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Login Component (unchanged)
 const LoginPage = ({ setLoginError, error }) => {
-  const [email, setEmail] = useState(''); // Ubah dari username ke email
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -14,13 +28,12 @@ const LoginPage = ({ setLoginError, error }) => {
     setLoginError('');
 
     try {
-        // Guna email dari state (input borang) untuk login Firebase
         await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
         console.error("Firebase Login Error:", err.code, err.message);
         switch (err.code) {
             case "auth/invalid-credential":
-                setLoginError("Email atau kata laluan tidak sah."); // Ubah mesej ralat
+                setLoginError("Email atau kata laluan tidak sah.");
                 break;
             case "auth/user-disabled":
                 setLoginError("Akaun anda telah dinyahaktifkan.");
@@ -49,12 +62,12 @@ const LoginPage = ({ setLoginError, error }) => {
               Email
             </label>
             <input
-              id="email" // Ubah ID
-              type="email" // Lebih baik guna type="email"
+              id="email"
+              type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)} // Set state 'email'
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200"
-              placeholder="Enter your email" // Ubah placeholder
+              placeholder="Enter your email"
               required
             />
           </div>
@@ -102,8 +115,8 @@ const LoginPage = ({ setLoginError, error }) => {
   );
 };
 
-// Main App component for the Prompt Enhancer (Dashboard)
-const PromptEnhancerApp = ({ onLogout, currentUser }) => {
+// Text-to-Video Enhancer Component (renamed from PromptEnhancerApp)
+const TextToVideoEnhancer = ({ onLogout, currentUser }) => {
   const [promptBefore, setPromptBefore] = useState('');
   const [promptAfter, setPromptAfter] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -116,20 +129,10 @@ const PromptEnhancerApp = ({ onLogout, currentUser }) => {
     setPromptAfter('');
     setCopyFeedback('');
 
-    // Pastikan anda menggunakan REACT_APP_GEMINI_API_KEY di Vercel
-    const apiKey = process.env.REACT_APP_GEMINI_API_KEY; // <-- Ini cara yang betul!
-
-    if (!apiKey) {
-      setError("Gemini API Key tidak ditemui. Sila semak Environment Variables.");
-      setIsLoading(false);
-      return;
-    }
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Updated with the provided API key
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-    // ************************************************************************************************************************
-    // PERUBAHAN PENTING DI SINI: Arahan kepada AI untuk hanya meletakkan dialog dalam tanda petikan.
-    // ************************************************************************************************************************
     const instructionPrompt = `You are a creative prompt enhancer. Take the following concise prompt and expand it into a highly detailed, vivid, and descriptive prompt suitable for generating images or scenes, primarily in English. Crucially, any dialogue provided in Malay with slang or accent MUST be preserved exactly as is, without translation or modification. The output should ONLY be the enhanced prompt, without any conversational text or introductions. Dialogue within the prompt MUST be enclosed in double quotation marks (e.g., "This is dialogue!"), and no other parts of the prompt should be quoted. Include sensory details, camera angles, lighting, environment, character appearance, actions, and overall mood/vibe.
 
 Example input: "Perempuan melayu rambut emo gothic style. Tengah ajar cara make-up dgn viewer tiktok dia sambil sia cakap : Salam guys! Kalini aku nak cuba-cuba make style gothic..!"
@@ -206,12 +209,9 @@ Now, enhance the following prompt: "${promptBefore}"`;
   const renderHighlightedPrompt = () => {
     if (!promptAfter) return null;
 
-    // Regex untuk mencari teks dalam tanda petikan berganda atau tunggal.
-    // Ini akan berfungsi dengan baik jika AI hanya meletakkan dialog dalam petikan.
     const parts = promptAfter.split(/((?:"[^"]*")|(?:'[^']*'))/g);
 
     return parts.map((part, index) => {
-        // Semak jika bahagian itu bermula dan berakhir dengan tanda petikan
         if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
             return (
                 <span key={index} className="bg-yellow-700 bg-opacity-50 rounded px-1 py-0.5 text-yellow-200">
@@ -224,108 +224,313 @@ Now, enhance the following prompt: "${promptBefore}"`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100 font-sans p-4 sm:p-8 flex items-center justify-center">
-      <div className="bg-gray-800 p-6 sm:p-10 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-700">
-        {/* Header with user info and logout */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-purple-400">
-              Prompt Enhancer VEO3
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">
-              Welcome, {currentUser}
-            </p>
-          </div>
-          <button
-            onClick={onLogout}
-            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
-          >
-            Logout
-          </button>
-        </div>
+    <>
+      <p className="text-center text-gray-400 mb-8">
+        Masukkan prompt ringkas, dan biarkan AI mengubahnya menjadi penerangan yang kaya dan terperinci.
+      </p>
 
-        <p className="text-center text-gray-400 mb-8">
-          Masukkan prompt ringkas, dan biarkan AI mengubahnya menjadi penerangan yang kaya dan terperinci.
-        </p>
-
-        <div className="mb-6">
-          <label htmlFor="prompt-before" className="block text-lg font-medium text-gray-300 mb-2">
-            Prompt Sebelum (text to video):
-          </label>
-          <textarea
-            id="prompt-before"
-            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200 placeholder-gray-500 h-32 resize-y"
-            placeholder="Contoh: Perempuan melayu rambut emo gothic style. Tengah ajar cara make-up dgn viewer tiktok dia sambil sia cakap : Salam guys! Kalini aku nak cuba-cuba make style gothic..!&#10;Contoh: Buat orang tua melayu naik wheelchair tengah berlumba dengan beca sambil dia cakap : Atuk ada style..!"
-            value={promptBefore}
-            onChange={(e) => setPromptBefore(e.target.value)}
-          ></textarea>
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
-          <button
-            onClick={handleEnhancePrompt}
-            disabled={isLoading || !promptBefore.trim()}
-            className="px-8 py-3 bg-purple-600 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-full sm:w-auto"
-          >
-            {isLoading ? (
-              <svg className="animate-spin h-5 w-5 text-white mr-3" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            ) : (
-              'Enhance Prompt'
-            )}
-          </button>
-          <button
-            onClick={handleResetPrompt}
-            className="px-8 py-3 bg-gray-600 text-white font-semibold rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-75 transition duration-300 ease-in-out w-full sm:w-auto"
-          >
-            Reset Prompt
-          </button>
-        </div>
-
-        {error && (
-          <div className="bg-red-900 border border-red-700 text-red-300 p-4 rounded-lg mb-6 text-center">
-            Ralat: {error}
-          </div>
-        )}
-
-        {promptAfter && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="prompt-after-display" className="block text-lg font-medium text-gray-300">
-                Prompt Selepas:
-              </label>
-              <div className="flex items-center">
-                {copyFeedback && (
-                  <span className="text-sm text-green-400 mr-2">{copyFeedback}</span>
-                )}
-                <button
-                  onClick={copyToClipboard}
-                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-            <div
-              id="prompt-after-display"
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none text-gray-200 h-80 resize-y overflow-auto"
-            >
-              {renderHighlightedPrompt()}
-            </div>
-          </div>
-        )}
+      <div className="mb-6">
+        <label htmlFor="prompt-before" className="block text-lg font-medium text-gray-300 mb-2">
+          Prompt Sebelum (text to video):
+        </label>
+        <textarea
+          id="prompt-before"
+          className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-200 placeholder-gray-500 h-32 resize-y"
+          placeholder="Contoh: Perempuan melayu rambut emo gothic style. Tengah ajar cara make-up dgn viewer tiktok dia sambil sia cakap : Salam guys! Kalini aku nak cuba-cuba make style gothic..!&#10;Contoh: Buat orang tua melayu naik wheelchair tengah berlumba dengan beca sambil dia cakap : Atuk ada style..!"
+          value={promptBefore}
+          onChange={(e) => setPromptBefore(e.target.value)}
+        ></textarea>
       </div>
-    </div>
+
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+        <button
+          onClick={handleEnhancePrompt}
+          disabled={isLoading || !promptBefore.trim()}
+          className="px-8 py-3 bg-purple-600 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-full sm:w-auto"
+        >
+          {isLoading ? (
+            <svg className="animate-spin h-5 w-5 text-white mr-3" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            'Enhance Prompt'
+          )}
+        </button>
+        <button
+          onClick={handleResetPrompt}
+          className="px-8 py-3 bg-gray-600 text-white font-semibold rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-75 transition duration-300 ease-in-out w-full sm:w-auto"
+        >
+          Reset Prompt
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-900 border border-red-700 text-red-300 p-4 rounded-lg mb-6 text-center">
+          Ralat: {error}
+        </div>
+      )}
+
+      {promptAfter && (
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="prompt-after-display" className="block text-lg font-medium text-gray-300">
+              Prompt Selepas:
+            </label>
+            <div className="flex items-center">
+              {copyFeedback && (
+                <span className="text-sm text-green-400 mr-2">{copyFeedback}</span>
+              )}
+              <button
+                onClick={copyToClipboard}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+          <div
+            id="prompt-after-display"
+            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none text-gray-200 h-80 resize-y overflow-auto"
+          >
+            {renderHighlightedPrompt()}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
-// Main App component that handles authentication
+// Image-to-Text Enhancer Component
+const ImageToTextEnhancer = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [enhancedText, setEnhancedText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [copyFeedback, setCopyFeedback] = useState('');
+
+  const PROMPT_WRITING_GUIDE = `PROMPT WRITING GUIDE – IMAGE TO TEXT DESCRIPTION
+Your Role: You are a good analyze and expert prompt engineer specializing in transforming still images into vivid.
+Please Enchance the prompt with the good visual when generate the image.
+
+Prompt Structure (In Order):
+1. Infer (e.g: malay, chinese, indian, korean, japan, europa) with contextual cultural cues like hijab style, facial structure, skin tone, and makeup trends in the region.
+2. Specify camera angles, focus depth, and lighting setup.
+3. Analyze and specify the visual art style or medium of the image—such as photography, anime, cinematic, 3D render, Pixar-style, RAW photo, etc.
+4. Describe character appearance and clothing details.
+5. Describe precise gestures, facial expressions, and physical interactions.
+6. Include environmental elements and ambient.
+7. Describe the main action.
+
+Final Output Rules:
+- Max ~800 characters
+- Concise the prompt properly
+- Output the prompt only`;
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setEnhancedText('');
+      setError(null);
+      setCopyFeedback('');
+    } else {
+      setSelectedImage(null);
+      setImagePreview(null);
+      setEnhancedText('');
+    }
+  };
+
+  const handleEnhanceImage = async () => {
+    if (!selectedImage) {
+      setError("Sila muat naik imej terlebih dahulu.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setEnhancedText('');
+    setCopyFeedback('');
+
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Updated with the provided API key
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedImage);
+    reader.onloadend = async () => {
+      const base64ImageData = reader.result.split(',')[1]; // Get base64 part
+
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: PROMPT_WRITING_GUIDE }, // The instruction guide
+              {
+                inlineData: {
+                  mimeType: selectedImage.type,
+                  data: base64ImageData
+                }
+              }
+            ]
+          }
+        ],
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+          const text = result.candidates[0].content.parts[0].text;
+          setEnhancedText(text);
+        } else {
+          setError("Tiada penerangan imej ditemui dalam respons API. Sila cuba lagi.");
+        }
+      } catch (err) {
+        console.error("Error enhancing image:", err);
+        setError(`Gagal mempertingkatkan imej: ${err.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  };
+
+  const copyToClipboard = () => {
+    const tempTextArea = document.createElement('textarea');
+    tempTextArea.value = enhancedText;
+    document.body.appendChild(tempTextArea);
+    tempTextArea.select();
+    tempTextArea.setSelectionRange(0, 99999);
+    try {
+      document.execCommand('copy');
+      setCopyFeedback('Copied!');
+      setTimeout(() => setCopyFeedback(''), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      setCopyFeedback('Failed to copy!');
+    } finally {
+      document.body.removeChild(tempTextArea);
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setEnhancedText('');
+    setError(null);
+    setCopyFeedback('');
+    setIsLoading(false);
+  };
+
+  return (
+    <>
+      <p className="text-center text-gray-400 mb-8">
+        Muat naik imej, dan biarkan AI mengubahnya menjadi penerangan prompt yang terperinci.
+      </p>
+
+      <div className="mb-6">
+        <label htmlFor="image-upload" className="block text-lg font-medium text-gray-300 mb-2">
+          Muat Naik Imej:
+        </label>
+        <input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="w-full text-gray-200 bg-gray-700 border border-gray-600 rounded-lg p-3 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-600"
+        />
+        {imagePreview && (
+          <div className="mt-4 flex justify-center">
+            <img src={imagePreview} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-lg max-h-64 object-contain" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+        <button
+          onClick={handleEnhanceImage}
+          disabled={isLoading || !selectedImage}
+          className="px-8 py-3 bg-purple-600 text-white font-semibold rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-full sm:w-auto"
+        >
+          {isLoading ? (
+            <svg className="animate-spin h-5 w-5 text-white mr-3" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            'Enhance Image Prompt'
+          )}
+        </button>
+        <button
+          onClick={handleReset}
+          className="px-8 py-3 bg-gray-600 text-white font-semibold rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-75 transition duration-300 ease-in-out w-full sm:w-auto"
+        >
+          Reset
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-900 border border-red-700 text-red-300 p-4 rounded-lg mb-6 text-center">
+          Ralat: {error}
+        </div>
+      )}
+
+      {enhancedText && (
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="enhanced-text-display" className="block text-lg font-medium text-gray-300">
+              Prompt Selepas (Image to Text):
+            </label>
+            <div className="flex items-center">
+              {copyFeedback && (
+                <span className="text-sm text-green-400 mr-2">{copyFeedback}</span>
+              )}
+              <button
+                onClick={copyToClipboard}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+          <div
+            id="enhanced-text-display"
+            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none text-gray-200 h-80 resize-y overflow-auto"
+          >
+            {enhancedText}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+
+// Main App component that handles authentication and tab switching
 const App = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [loginError, setLoginError] = useState('');
+  const [activeTab, setActiveTab] = useState('text-to-video'); // State for active tab
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -363,7 +568,60 @@ const App = () => {
     return <LoginPage setLoginError={setLoginError} error={loginError} />;
   }
 
-  return <PromptEnhancerApp onLogout={handleLogout} currentUser={currentUser.email} />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100 font-sans p-4 sm:p-8 flex items-center justify-center">
+      <div className="bg-gray-800 p-6 sm:p-10 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-700">
+        {/* Header with user info and logout */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-purple-400">
+              Prompt Enhancer VEO3
+            </h1>
+            <p className="text-sm text-gray-400 mt-1">
+              Welcome, {currentUser.email}
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition duration-300 ease-in-out text-sm"
+          >
+            Logout
+          </button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={() => setActiveTab('text-to-video')}
+            className={`px-6 py-3 rounded-l-lg font-semibold transition duration-300 ease-in-out ${
+              activeTab === 'text-to-video'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Text to Video
+          </button>
+          <button
+            onClick={() => setActiveTab('image-to-text')}
+            className={`px-6 py-3 rounded-r-lg font-semibold transition duration-300 ease-in-out ${
+              activeTab === 'image-to-text'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Image to Text
+          </button>
+        </div>
+
+        {/* Conditional rendering based on active tab */}
+        {activeTab === 'text-to-video' ? (
+          <TextToVideoEnhancer onLogout={handleLogout} currentUser={currentUser.email} />
+        ) : (
+          <ImageToTextEnhancer />
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default App;
