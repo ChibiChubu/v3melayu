@@ -133,11 +133,11 @@ const TextToVideoEnhancer = ({ onLogout, currentUser }) => {
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-    const instructionPrompt = `Prompt: A medium shot frames an old sailor, his knitted blue sailor hat casting a shadow over his eyes, a thick grey beard obscuring his chin. He holds his pipe in one hand, gesturing with it towards the churning, grey sea beyond the ship's railing. "This ocean, it's a force, a wild, untamed might. And she commands your awe, with every breaking light.    
+    const instructionPrompt = `Prompt: A medium shot frames an old sailor, his knitted blue sailor hat casting a shadow over his eyes, a thick grey beard obscuring his chin. He holds his pipe in one hand, gesturing with it towards the churning, grey sea beyond the ship's railing. "This ocean, it's a force, a wild, untamed might. And she commands your awe, with every breaking light. 
   
-Prompt: A detective interrogates a nervous-looking rubber duck. "Where were you on the night of the bubble bath?!" he quacks. Audio: Detective's stern quack, nervous squeaks from rubber duck.    
+Prompt: A detective interrogates a nervous-looking rubber duck. "Where were you on the night of the bubble bath?!" he quacks. Audio: Detective's stern quack, nervous squeaks from rubber duck.
     
-Prompt: A close up of spies exchanging information in a crowded train station with uniformed guards patrolling nearby "The microfilm is in your ticket" he murmured pretending to check his watch "They're watching the north exit" she warned casually adjusting her scarf "Use the service tunnel" Commuters rush past oblivious to the covert exchange happening amid announcements of arrivals and departures.    
+Prompt: A female jedi from star wars with green skin, geometric tattoos across her face, and a dual-bladed yellow lightsaber. She wears a lightweight, brown-and-gold robe. She is meditating in a quiet swamp illuminated by bioluminescent plants on an alien world.She says "The Force doesn't scream—it hums. Listen, and you'll know which path is open." Cinematic film.
     
 Based on reference prompt atas. Aku nk jadikan balik prompt mcm atas as guide bila aku nk prompt balik in english. But only tukar dialog dialect in Malay with slang/accent malay must.Format Prompt Guide (Based on Your Examples):
 Start: Describe the scene with cinematic framing (e.g., medium shot, close-up).
@@ -162,12 +162,17 @@ Keep the dialogue in Malay with dialect/slang, as in the examples.
 
 Maintain consistent tone, framing, and action per prompt.
 
-Prioritize realism, clarity, and style (e.g., found footage, noir, theatrical, etc.).Final Output Rules:
+Prioritize realism, clarity, and style (e.g., found footage, noir, theatrical, etc.).
+- Final Output Rules:- do not to use quotes. Try not to use quotes, if you need dialouge say something like They talk about [subject] and that [additional detail]
+- before dialog character must have symbol : (example- she says: "leganya"
+- Focusing on the visual without text
 - Only give dialog if i put
 - Max ~800 characters
 - One flowing paragraph
 - No introductions or commentary
 - Output the prompt only
+
+
 
 Example input: "Buat orang tua melayu naik wheelchair tengah berlumba dengan beca sambil dia cakap : Atuk ada style..!"
 Example output: "A bustling street scene in a vibrant Malaysian city. An elderly Malay man with a mischievous grin, wearing a traditional songkok, is seated in a motorized wheelchair, expertly maneuvering it through the crowd. Beside him, a colorful trishaw (beca) driver, pedaling furiously, is engaged in a friendly, exhilarating race. The old man leans forward, a twinkle in his eye, and exclaims with a playful wink, "Atuk ada style..!" The sounds of city life, distant laughter, and the rhythmic pedaling of the trishaw fill the air. The atmosphere is lighthearted and full of local charm."
