@@ -324,7 +324,37 @@ Final Output Rules:
 - No introductions or commentary
 - Output the prompt only`;
 
-  const MOTION_PROMPT_WRITING_GUIDE = `You are a specialized animation prompt enhancer designed to transform prompts that describe still images into highly detailed animation prompts in the style specified by the prompt.The syle might be cinematic, anime, a pencil sketch, or any other type of art style. Your task is to generate a single animation prompt per input, strictly adhering to the following rules: Rules: The output must precisely follow the wording and structure of the input, only adding movement to the subject if needed, and adding subtle camera movement, but keeping it overall very consistent with the input prompt. However you can also be creative and add or remove visually interesting aspects to make the animation more interesting, more beautiful or more entertaining. IMPORTANT: YOU MUST ANSWER WITH ONLY THE OUTPUT ANIMATION PROMPT THAT VERY PRECISELY RESEMBLES THE IMAGE PROMPT AND ADDS SUBJECT ACTION AND CAMERA ACTION FOR A SINGLE CAMERA SHOT BASED ON THE USER'S INPUT, COHERING PERFECTLY TO THE RULES AND REQUEST AS A SINGLE STRING. When writing prompts, focus on detailed, chronological descriptions of actions and scenes. Include specific movements, appearances, camera angles, and environmental details - all in a single flowing paragraph. Start directly with the action, and keep descriptions literal and precise. Think like a cinematographer describing a shot list. Keep within 200 words. For best results, build your prompts using this structure: Start by Describing the main action in a single sentence. Add specific details about movements and gestures. Then describe the specific art style. Describe character/object appearances precisely. Include background and environment details. Specify camera angles and movements. Describe lighting and colors and art syle. Note any changes or sudden events.`;
+  const MOTION_PROMPT_WRITING_GUIDE = `Prompt: A medium shot frames an old sailor, his knitted blue sailor hat casting a shadow over his eyes, a thick grey beard obscuring his chin. He holds his pipe in one hand, gesturing with it towards the churning, grey sea beyond the ship's railing. "This ocean, it's a force, a wild, untamed might. And she commands your awe, with every breaking light.    
+  
+Prompt: A detective interrogates a nervous-looking rubber duck. "Where were you on the night of the bubble bath?!" he quacks. Audio: Detective's stern quack, nervous squeaks from rubber duck.    
+    
+Prompt: A close up of spies exchanging information in a crowded train station with uniformed guards patrolling nearby "The microfilm is in your ticket" he murmured pretending to check his watch "They're watching the north exit" she warned casually adjusting her scarf "Use the service tunnel" Commuters rush past oblivious to the covert exchange happening amid announcements of arrivals and departures.    
+    
+Based on reference prompt atas. Aku nk jadikan balik prompt mcm atas as guide bila aku nk prompt balik in english. But only tukar dialog dialect in Malay with slang/accent malay must.Format Prompt Guide (Based on Your Examples):
+Start: Describe the scene with cinematic framing (e.g., medium shot, close-up).
+
+Subject(s): Mention key characters, their physical features, attire, expressions, props.
+
+Action: Include clear action or gesture.
+
+Dialogue: In dialect Malay, with slang/aksen (e.g. “Aku cakap, jangan main-main dengan sabun tu!”).
+
+Surrounding Atmosphere: Use environmental context (e.g., "commuters rush past," or "churning, grey sea").
+
+Tone: Can range from serious to absurd. Audio cues (optional): wind, screams, announcements, etc.
+
+Important: Dialogue remains in Malay dialect only, everything else in English.
+
+🧠 Memory Saved:
+When you say “jadikan balik prompt mcm atas,” I’ll now:
+
+Convert your input into cinematic-style English prompt.
+
+Keep the dialogue in Malay with dialect/slang, as in the examples.
+
+Maintain consistent tone, framing, and action per prompt.
+
+Prioritize realism, clarity, and style (e.g., found footage, noir, theatrical, etc.).`;
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
