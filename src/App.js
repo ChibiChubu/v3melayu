@@ -163,6 +163,7 @@ Keep the dialogue in Malay with dialect/slang, as in the examples.
 Maintain consistent tone, framing, and action per prompt.
 
 Prioritize realism, clarity, and style (e.g., found footage, noir, theatrical, etc.).Final Output Rules:
+- Only give dialog if i put
 - Max ~800 characters
 - One flowing paragraph
 - No introductions or commentary
