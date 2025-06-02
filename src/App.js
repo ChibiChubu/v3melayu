@@ -4,7 +4,7 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from
 
 // Firebase configuration (moved from firebase-config.js)
 const firebaseConfig = {
-  apiKey: "AIzaSyAt2RT4KdmuvInskJo4N3r14ARivWEuT7Q",
+  apiKey: "AIzaSyCFzCb1qZoM3Up25VTopNeh7-qEW4HqSeY",
   authDomain: "promptenhancerveo3.firebaseapp.com",
   projectId: "promptenhancerveo3",
   storageBucket: "promptenhancerveo3.firebasestorage.app",
@@ -129,7 +129,7 @@ const TextToVideoEnhancer = ({ onLogout, currentUser }) => {
     setPromptAfter('');
     setCopyFeedback('');
 
-    const apiKey = "AIzaSyAt2RT4KdmuvInskJo4N3r14ARivWEuT7Q"; // Updated with the provided API key
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Updated with the provided API key
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -391,7 +391,7 @@ Final Output Rules:
     setMotionPrompt(''); // Clear motion prompt when generating new image text
     setCopyFeedback('');
 
-    const apiKey = "AIzaSyAt2RT4KdmuvInskJo4N3r14ARivWEuT7Q";
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const reader = new FileReader();
@@ -458,7 +458,7 @@ Final Output Rules:
     setMotionPrompt('');
     setMotionCopyFeedback('');
 
-    const apiKey = "AIzaSyAt2RT4KdmuvInskJo4N3r14ARivWEuT7Q";
+    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const instructionPrompt = `${MOTION_PROMPT_WRITING_GUIDE}\n\nInput prompt to animate: "${enhancedText}"`;
