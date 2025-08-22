@@ -129,7 +129,7 @@ const TextToVideoEnhancer = ({ onLogout, currentUser }) => {
     setPromptAfter('');
     setCopyFeedback('');
 
-    const apiKey = "AIzaSyCVNAQSIVC1h4rY9r_UsMrJGQK4jFxeYYQ"; // Updated with the provided API key
+    const apiKey = "AIzaSyCL61fd2lHQoGTKueRCCS8IOjuO811q-dU"; // Updated with the provided API key
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -247,15 +247,25 @@ Now, enhance the following prompt: "${promptBefore}"`;
 
     const parts = promptAfter.split(/((?:"[^"]*")|(?:'[^']*'))/g);
 
-    return parts.map((part, index) => {
-        if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
-            return (
-                <span key={index} className="bg-yellow-700 bg-opacity-50 rounded px-1 py-0.5 text-yellow-200">
-                    {part}
-                </span>
-            );
-        }
-        return <span key={index}>{part}</span>;
+   return parts.map((part, index) => {
+    // Check if the part is exactly "dialog" (including quotes)
+    if (part === '"dialog only"' || part === "'dialog only'") {
+        return (
+            <span key={index} className="bg-blue-700 bg-opacity-50 rounded px-1 py-0.5 text-blue-200">
+                {part}
+            </span>
+        );
+    }
+    // Handle other quoted strings
+    if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
+        return (
+            <span key={index} className="bg-yellow-700 bg-opacity-50 rounded px-1 py-0.5 text-yellow-200">
+                {part}
+            </span>
+        );
+    }
+    // Handle unquoted strings
+    return <span key={index}>{part}</span>;
     });
   };
 
